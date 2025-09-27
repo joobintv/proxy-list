@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+  <meta charset="UTF-8">
+  <title>لیست پروکسی‌ها</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background-color: #121212;
+      color: #fff;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+    }
+    .tabs {
+      display: flex;
+      justify-content: center;
+      background: #1f1f1f;
+    }
+    .tab {
+      padding: 12px 20px;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: 0.3s;
+    }
+    .tab:hover { background: #2a2a2a; }
+    .tab.active {
+      border-bottom: 2px solid #00bcd4;
+      color: #00bcd4;
+    }
+    .content { display: none; padding: 20px; }
+    .content.active { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
+    .card {
+      background: #1e1e1e;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.5);
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    .card:hover { transform: scale(1.05); background: #2a2a2a; }
+  </style>
+</head>
+<body>
+  <div class="tabs">
+    <div class="tab active" onclick="showTab('general')">همگانی</div>
+    <div class="tab" onclick="showTab('irancell')">ایرانسل</div>
+    <div class="tab" onclick="showTab('mci')">همراه اول</div>
+    <div class="tab" onclick="showTab('other')">سایر</div>
+  </div>
+
+  <div id="general" class="content active"></div>
+  <div id="irancell" class="content"></div>
+  <div id="mci" class="content"></div>
+  <div id="other" class="content"></div>
+
+  <script>
+    function showTab(id) {
+      document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      document.querySelector(`.tab[onclick="showTab('${id}')"]`).classList.add('active');
+    }
+
+    async function loadProxies(tabId, file) {
+      try {
+        let res = await fetch(file);
+        let text = await res.text();
+        let lines = text.split("\n").filter(l => l.trim() !== "");
+        let container = document.getElementById(tabId);
+        container.innerHTML = "";
+        lines.forEach((line, i) => {
+          let card = document.createElement("div");
+          card.className = "card";
+          card.innerHTML = `<h3>پروکسی ${i + 1}</h3>`;
+          card.onclick = () => window.open(line.trim(), "_blank");
+          container.appendChild(card);
+        });
+      } catch (e) {
+        console.error("خطا در بارگذاری:", file, e);
+      }
+    }
+
+    // لود فایل‌ها
+    loadProxies("general", "general.html");
+    loadProxies("irancell", "irancell.html");
+    loadProxies("mci", "mci.html");
+    loadProxies("other", "other.html");
+  </script>
+</body>
+</html>
