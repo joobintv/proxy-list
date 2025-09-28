@@ -1,91 +1,281 @@
 <!DOCTYPE html>
 <html lang="fa">
 <head>
-  <meta charset="UTF-8">
-  <title>لیست پروکسی‌ها</title>
-  <style>
-    body {
-      font-family: sans-serif;
-      background-color: #121212;
-      color: #fff;
-      text-align: center;
-      margin: 0;
-      padding: 0;
-    }
-    .tabs {
-      display: flex;
-      justify-content: center;
-      background: #1f1f1f;
-    }
-    .tab {
-      padding: 12px 20px;
-      cursor: pointer;
-      border-bottom: 2px solid transparent;
-      transition: 0.3s;
-    }
-    .tab:hover { background: #2a2a2a; }
-    .tab.active {
-      border-bottom: 2px solid #00bcd4;
-      color: #00bcd4;
-    }
-    .content { display: none; padding: 20px; }
-    .content.active { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
-    .card {
-      background: #1e1e1e;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.5);
-      cursor: pointer;
-      transition: transform 0.2s;
-    }
-    .card:hover { transform: scale(1.05); background: #2a2a2a; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>لیست پروکسی‌های تلگرام</title>
+
+<style>
+  body {
+    font-family: 'Vazirmatn', sans-serif;
+    margin: 0;
+    padding: 0;
+    direction: rtl;
+    background: #f8f9fa;
+    color: #333;
+    transition: background 0.3s, color 0.3s;
+  }
+  header {
+    background: #0078D4;
+    color: white;
+    padding: 20px 0;
+    text-align: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  }
+  header h1 { margin: 0; font-size: 22px; }
+  .toggle-dark {
+    position: absolute;
+    left: 20px;
+    top: 20px;
+    background: white;
+    color: #0078D4;
+    border: none;
+    border-radius: 20px;
+    padding: 6px 14px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.3s;
+  }
+  .toggle-dark:hover { background: #ddd; }
+  body.dark { background: #121212; color: #ddd; }
+  body.dark header { background: #1f1f1f; }
+  body.dark .toggle-dark { background: #333; color: #fff; }
+
+  .tabs {
+    display: flex;
+    justify-content: center;
+    border-bottom: 2px solid #ddd;
+    background: #fff;
+  }
+  .tab {
+    padding: 15px 25px;
+    cursor: pointer;
+    font-weight: bold;
+    color: #555;
+    position: relative;
+    transition: color 0.3s;
+  }
+  .tab:hover { color: #0078D4; }
+  .tab.active { color: #0078D4; }
+  .tab.active::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 20%;
+    width: 60%;
+    height: 3px;
+    background: #0078D4;
+    border-radius: 5px 5px 0 0;
+  }
+  body.dark .tabs { background: #1e1e1e; border-bottom: 2px solid #333; }
+  body.dark .tab { color: #aaa; }
+  body.dark .tab.active { color: #4aa3ff; }
+  body.dark .tab.active::after { background: #4aa3ff; }
+
+  .content {
+    display: none;
+    padding: 20px;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+  }
+  .content.active {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .card {
+    background: white;
+    border-radius: 12px;
+    padding: 30px 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    text-align: center;
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.25s, box-shadow 0.25s;
+  }
+  .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+  }
+  body.dark .card {
+    background: #1e1e1e;
+    color: #ddd;
+    box-shadow: 0 4px 12px rgba(255,255,255,0.05);
+  }
+
+  footer {
+    background: #0078D4;
+    color: white;
+    text-align: center;
+    padding: 15px 0 10px 0;
+    margin-top: 20px;
+  }
+  body.dark footer { background: #1f1f1f; }
+
+  .ad-bottom-container {
+    background: white;
+    text-align: center;
+    padding: 10px 0;
+    margin-top: 20px;
+  }
+
+  #offline-alert {
+    display: none;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    background: #ff4d4f;
+    color: white;
+    text-align: center;
+    padding: 10px 0;
+    z-index: 9999;
+    font-weight: bold;
+  }
+
+  .donate-container {
+    margin-bottom: 15px;
+  }
+</style>
+
+<script>
+!function(e,t,n){e.yektanetAnalyticsObject=n,e[n]=e[n]||function(){e[n].q.push(arguments)},e[n].q=e[n]||[];var a=t.getElementsByTagName("head")[0],r=new Date,c="https://cdn.yektanet.com/superscript/QOGX7YKP/native-j.ir-43970/yn_pub.js?v="+r.getFullYear().toString()+"0"+r.getMonth()+"0"+r.getDate()+"0"+r.getHours(),s=t.createElement("link");s.rel="preload",s.as="script",s.href=c,a.appendChild(s);var l=t.createElement("script");l.async=!0;l.src=c,a.appendChild(l)}(window,document,"yektanet");
+</script>
+
 </head>
 <body>
-  <div class="tabs">
-    <div class="tab active" onclick="showTab('general')">همگانی</div>
-    <div class="tab" onclick="showTab('irancell')">ایرانسل</div>
-    <div class="tab" onclick="showTab('mci')">همراه اول</div>
-    <div class="tab" onclick="showTab('other')">سایر</div>
-  </div>
 
+<div id="offline-alert">⚠️ اتصال اینترنت برقرار نیست!</div>
+<div id="pos-article-display-1094800"></div>
+
+<header>
+  <h1>لیست پروکسی‌های تلگرام</h1>
+  <button class="toggle-dark" onclick="toggleDark()">🌙</button>
+</header>
+
+<div class="tabs">
+  <div class="tab active" onclick="openTab('general', this)">همگانی</div>
+  <div class="tab" onclick="openTab('irancell', this)">ایرانسل</div>
+  <div class="tab" onclick="openTab('mci', this)">همراه اول</div>
+  <div class="tab" onclick="openTab('other', this)">سایر</div>
+</div>
+
+<main>
   <div id="general" class="content active"></div>
   <div id="irancell" class="content"></div>
   <div id="mci" class="content"></div>
   <div id="other" class="content"></div>
+</main>
 
-  <script>
-    function showTab(id) {
-      document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
-      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-      document.getElementById(id).classList.add('active');
-      document.querySelector(`.tab[onclick="showTab('${id}')"]`).classList.add('active');
-    }
+<footer>
+  <div class="donate-container">
+    <a href="https://your-donate-link.com" target="_blank" style="color:white; text-decoration:none; font-weight:bold;">
+      حمایت مالی 💖
+    </a>
+  </div>
+  <div class="ad-bottom-container">
+    <div id="pos-article-display-109480"></div>
+  </div>
+</footer>
 
-    async function loadProxies(tabId, file) {
-      try {
-        let res = await fetch(file);
-        let text = await res.text();
-        let lines = text.split("\n").filter(l => l.trim() !== "");
-        let container = document.getElementById(tabId);
-        container.innerHTML = "";
-        lines.forEach((line, i) => {
-          let card = document.createElement("div");
-          card.className = "card";
-          card.innerHTML = `<h3>پروکسی ${i + 1}</h3>`;
-          card.onclick = () => window.open(line.trim(), "_blank");
-          container.appendChild(card);
-        });
-      } catch (e) {
-        console.error("خطا در بارگذاری:", file, e);
-      }
-    }
+<script>
+function toggleDark() { document.body.classList.toggle('dark'); }
 
-    // لود فایل‌ها
-    loadProxies("general", "general.html");
-    loadProxies("irancell", "irancell.html");
-    loadProxies("mci", "mci.html");
-    loadProxies("other", "other.html");
-  </script>
+function openTab(tabId, el) {
+  const oldContent = document.querySelector('.content.active');
+  const newContent = document.getElementById(tabId);
+  if(oldContent === newContent) return;
+
+  oldContent.style.opacity = 0;
+  oldContent.style.transform = 'translateY(20px)';
+
+  setTimeout(() => {
+    oldContent.classList.remove('active');
+    newContent.classList.add('active');
+    newContent.style.opacity = 0;
+    newContent.style.transform = 'translateY(20px)';
+
+    setTimeout(() => {
+      newContent.style.opacity = 1;
+      newContent.style.transform = 'translateY(0)';
+    }, 50);
+  }, 300);
+
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+}
+
+const generalProxies = [
+  "https://t.me/proxy?server=googel.mypico.co.uk.&port=8888&secret=eeNEgYdJvXrFGRMCIMJdCQtY2RueWVrdGFuZXQuY29tAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+  "https://t.me/proxy?server=www.mypico.co.uk.&port=8888&secret=eeNEgYdJvXrFGRMCIMJdCQtY2RueWVrdGFuZXQuY29tAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+  "https://t.me/proxy?server=Unknown&port=8888&secret=eeNEgYdJvXrFGRMCIMJdCQtY2RueWVrdGFuZXQuY29tAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+  "https://t.me/proxy?server=Unknown&port=6773&secret=eeNEgYdJvXrFGRMCIMJdCQtY2RueWVrdGVrdGFuZXQuY29tAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+  "https://t.me/proxy?server=Unknown&port=5777&secret=eeRigzNJvXrFGRMCIMJdEA",
+  "https://t.me/proxy?server=Unknown&port=443&secret=eeNEgYdJvXrFGRMCIMJdCQtY2RueWVrdGVrdGFuZXQuY29tAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+  "https://t.me/proxy?server=2do.primerpro.co.uk.&port=8443&secret=EERighJJvXrFGRMCIMJdCQRueWVrdGFuZXQuY29tZmFyYWthdi5jb212YW4ubmFqdmEuY29tAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+];
+
+
+function loadGeneral() {
+  const container = document.getElementById("general");
+  container.innerHTML = "";
+  generalProxies.forEach((url, i) => {
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML = `<h3>پروکسی ${i + 1}</h3>`;
+    card.onclick = () => {
+      // باز کردن لینک در مرورگر خارجی
+      window.location.href = url;
+    };
+    container.appendChild(card);
+  });
+}
+
+async function loadProxies(tabId, fileUrl) {
+  try {
+    const res = await fetch(fileUrl);
+    const text = await res.text();
+    const lines = text.split("\n").filter(l => l.trim() !== "");
+    const container = document.getElementById(tabId);
+    container.innerHTML = "";
+    lines.forEach((line, i) => {
+      const card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML = `<h3>پروکسی ${i + 1}</h3>`;
+      card.onclick = () => {
+        window.location.href = line.trim();
+      };
+      container.appendChild(card);
+    });
+  } catch (e) {
+    console.error("خطا در بارگذاری:", fileUrl, e);
+  }
+}
+
+loadGeneral();
+loadProxies("irancell", "https://raw.githubusercontent.com/joobintv/proxy-list/main/irancell.txt");
+loadProxies("mci", "https://raw.githubusercontent.com/joobintv/proxy-list/main/mci.txt");
+loadProxies("other", "https://raw.githubusercontent.com/joobintv/proxy-list/main/other.txt");
+
+function updateOnlineStatus() {
+  const alertBox = document.getElementById("offline-alert");
+  if (navigator.onLine) {
+    alertBox.style.display = "none";
+  } else {
+    alertBox.style.display = "block";
+  }
+}
+window.addEventListener('load', updateOnlineStatus);
+window.addEventListener('online', updateOnlineStatus);
+window.addEventListener('offline', updateOnlineStatus);
+</script>
+
 </body>
 </html>
